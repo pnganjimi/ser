@@ -1,4 +1,7 @@
+
+
 import typer
+from ser.infer import inference
 
 main = typer.Typer()
 
@@ -10,4 +13,4 @@ def train():
 
 @main.command()
 def infer():
-    pass
+    inference()
