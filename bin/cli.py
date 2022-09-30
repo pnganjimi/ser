@@ -1,21 +1,19 @@
 from ser import transform, data
 from ser.model import Net
 from ser.train import training, validation
-from pathlib import Path
+
 import torch
 from torch import optim
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-from torchvision import datasets, transforms
 
+from pathlib import Path
 import typer
+import json
+from datetime import datetime
+import os
 
 main = typer.Typer()
 
 PROJECT_ROOT = Path(__file__).parent.parent
-DATA_DIR = PROJECT_ROOT / "data"
-
 
 @main.command()
 def train(
@@ -34,12 +32,30 @@ def train(
     ,
 ):
 
+
     print(f"Running experiment {name}")
 
     # Set training device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # Create directory for experiment outputs
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    exp_time = current_time.split()[0] + "_" + current_time.split()[1]
+
+    exp_dir = (PROJECT_ROOT / "runs" / name / exp_time)
+    os.makedirs(exp_dir)
+
     # Save the parameters!
+    params = {'name': name,
+              'epochs': epochs,
+              'batch_size': batch_size,
+              'learning_rate': learning_rate,
+              'optimizer': 'Adam'
+
+            }
+
+    with open(exp_dir / "params.json", "w") as outfile:
+        json.dump(params, outfile, indent = 4) 
 
     # Load model
     model = Net().to(device)
@@ -51,7 +67,7 @@ def train(
     ts = transform.tranformation()
 
     # Load the data
-    training_dataloader, validation_dataloader = data.dataloader(batch_size, DATA_DIR, ts)
+    training_dataloader, validation_dataloader = data.dataloader(batch_size, ts)
 
     # Set up training loop
     for epoch in range(epochs):
@@ -66,6 +82,10 @@ def train(
     print("Training run complete")
 
 
+    # Save trained model 
+    torch.save(model, exp_dir / "model.pt")
+
+    
 
 @main.command()
 def infer():
