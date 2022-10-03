@@ -1,7 +1,7 @@
 {
     "name": "experiment1",
-    "epochs": 2,
-    "batch_size": 1000,
+    "epochs": 1,
+    "batch_size": 4000,
     "learning_rate": 0.01,
     "optimizer": "Adam"
 }
