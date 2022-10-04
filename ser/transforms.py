@@ -23,7 +23,7 @@ def flip():
     Flip a tensor both vertically and horizontally
     """
 
-    return RandomFlip(p=1)
+    return RandomFlip()
 
 
 class RandomFlip(torch_transforms.RandomVerticalFlip):

@@ -3,6 +3,11 @@ import torch
 import torch.nn.functional as F
 
 from ser.model import Net
+from ser.transforms import transforms, normalize, flip
+
+import json
+
+from ser.transforms import normalize
 
 
 def train(run_path, params, train_dataloader, val_dataloader, device, plotter):
@@ -13,8 +18,10 @@ def train(run_path, params, train_dataloader, val_dataloader, device, plotter):
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # train
+    val_acc = 0
+    best_epoch = 0
     for epoch in range(params.epochs):
-        train_loss = _train_batch(model, train_dataloader, optimizer, epoch, device)
+        train_loss, _ = _train_batch(model, train_dataloader, optimizer, epoch, device)
         val_loss, val_accuracy = _val_batch(model, val_dataloader, device, epoch)
 
         # Plot loss after all mini-batches have finished
@@ -22,8 +29,18 @@ def train(run_path, params, train_dataloader, val_dataloader, device, plotter):
         plotter.plot('loss', 'val', 'Class Loss', epoch, val_loss)
         plotter.plot('acc', 'val', 'Class Accuracy', epoch, val_accuracy)
 
-    # save model and save model params
-    torch.save(model, run_path / "model.pt")
+        if val_accuracy > val_acc:
+            val_acc = val_accuracy
+            best_epoch = epoch
+            print("New best model at epoch {epoch}")
+
+            # save model and save model params
+            torch.save(model, run_path / "model.pt")
+
+    with open(run_path / "best_results.json", "w") as file:
+        json.dump({"epoch":best_epoch, "accuracy":val_acc}, file, indent = 4) 
+
+    
 
 
 def _train_batch(model, dataloader, optimizer, epoch, device):

@@ -45,7 +45,7 @@ def train(
     sha = repo.head.object.hexsha
 
     # wraps the passed in parameters
-    params = Params(name, epochs, batch_size, learning_rate, sha, ts)
+    params = Params(name, epochs, batch_size, learning_rate, sha)
 
     # setup device to run on
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -66,7 +66,7 @@ def train(
     run_train(
         run_path,
         params,
-        train_dataloader(params.batch_size, transforms(ts)),
+        train_dataloader(params.batch_size, transforms(normalize, flip)),
         val_dataloader(params.batch_size, transforms(normalize)),
         device,
         plotter,

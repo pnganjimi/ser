@@ -10,7 +10,6 @@ class Params:
     batch_size: int
     learning_rate: float
     commit: str
-    augmentations: List[str]
 
 
 PARAMS_FILE = "params.json"
