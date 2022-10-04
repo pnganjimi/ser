@@ -1,3 +1,4 @@
+import torch
 from torchvision import transforms as torch_transforms
 
 
@@ -21,9 +22,22 @@ def flip():
     """
     Flip a tensor both vertically and horizontally
     """
-    return torch_transforms.Compose(
-        [
-            torch_transforms.RandomHorizontalFlip(p=1.0),
-            torch_transforms.RandomVerticalFlip(p=1.0),
-        ]
-    )
+
+    return RandomFlip(p=1)
+
+
+class RandomFlip(torch_transforms.RandomVerticalFlip):
+ 
+    def forward(self, img):
+        """
+        Args:
+            img (PIL Image or Tensor): Image to be flipped.
+
+        Returns:
+            PIL Image or Tensor: Randomly flipped image.
+        """
+
+        F = torch_transforms.functional
+        if torch.rand(1) < self.p:
+            return F.hflip(F.vflip(img))
+        return img

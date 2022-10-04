@@ -12,6 +12,7 @@ from ser.data import train_dataloader, val_dataloader, test_dataloader
 from ser.infer import infer as run_infer
 from ser.params import Params, save_params, load_params
 from ser.transforms import transforms, normalize, flip
+from ser.utils import VisdomLinePlotter
 
 main = typer.Typer()
 
@@ -30,13 +31,21 @@ def train(
     learning_rate: float = typer.Option(
         0.01, "-l", "--learning-rate", help="Learning rate for the model."
     ),
+    flip_transform: bool = typer.Option(
+        False, "-f/-F", "--flip/--no-flip", help="Add a flip transformation to the image"
+    ),
 ):
+
+    if flip_transform:
+        ts = [normalize, flip]
+    else: ts = [flip]
+
     """Run the training algorithm."""
     repo = git.Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
 
     # wraps the passed in parameters
-    params = Params(name, epochs, batch_size, learning_rate, sha)
+    params = Params(name, epochs, batch_size, learning_rate, sha, ts)
 
     # setup device to run on
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -50,13 +59,17 @@ def train(
     # Save parameters for the run
     save_params(run_path, params)
 
+    global plotter
+    plotter = VisdomLinePlotter(env_name='Tutorial Plots')
+
     # Train!
     run_train(
         run_path,
         params,
-        train_dataloader(params.batch_size, transforms(normalize)),
+        train_dataloader(params.batch_size, transforms(ts)),
         val_dataloader(params.batch_size, transforms(normalize)),
         device,
+        plotter,
     )
 
 
