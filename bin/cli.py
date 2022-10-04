@@ -66,7 +66,7 @@ def train(
     run_train(
         run_path,
         params,
-        train_dataloader(params.batch_size, transforms(normalize, flip)),
+        train_dataloader(params.batch_size, transforms(*ts)),
         val_dataloader(params.batch_size, transforms(normalize)),
         device,
         plotter,
