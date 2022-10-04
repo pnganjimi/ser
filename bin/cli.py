@@ -69,7 +69,7 @@ def infer(
         6, "-l", "--label", help="Label of image to show to the model"
     ),
     flip_transform: bool = typer.Option(
-        False, "-f", "--flip", help="Add a flip transformation to the image"
+        False, "-f/-F", "--flip/--no-flip", help="Add a flip transformation to the image"
     ),
 ):
 
@@ -86,10 +86,6 @@ def infer(
 
 
 def _select_test_image(label, ts):
-    # TODO `ts` is a list of transformations that will be applied to the loaded
-    # image. This works... but in order to add a transformation, or change one,
-    # we now have to come and edit the code... which sucks. What if we could
-    # configure the transformations via the cli?
     dataloader = test_dataloader(1, transforms(*ts))
     images, labels = next(iter(dataloader))
     while labels[0].item() != label:
